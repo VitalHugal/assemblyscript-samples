@@ -149,8 +149,8 @@ const btnCapture = document.getElementById('btnCapture');
 
 // Configurações do vídeo
 const videoConstraints = {
-  width: 150,
-  height: 150,
+  width: 250,
+  height: 250,
   facingMode: "user"
 };
 
@@ -167,6 +167,7 @@ navigator.mediaDevices.getUserMedia({ video: videoConstraints })
 // Captura a imagem quando o botão é clicado
 btnCapture.addEventListener('click', () => {
   console.time("capturando imagem")
+  
   // Desenha o quadro do vídeo no canvas
   canvas.getContext('2d').drawImage(videoElement, 0, 0, width, height);
 
