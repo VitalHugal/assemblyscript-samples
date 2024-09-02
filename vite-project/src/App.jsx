@@ -1,66 +1,65 @@
+import { useRef, useEffect, useState } from 'react';
 import './App.css'
+import Webcam from 'react-webcam';
 
 function App() {
+  const canvasRef = useRef(null);
+  const webcamRef = useRef(null);
+  const [ctx, setCtx] = useState(null);
+  const [width, setWidth] = useState(300);
+  const [height, setHeight] = useState(300);
 
-  // importando componentes
-  const canvas = document.querySelector('#canvas');
-  const ctx = canvas.getContext('2d');
 
-  // ajuste o tamanho do canvas para metade do tamanho da imagem original
-  const width = canvas.width = 300;
-  const height = canvas.height = 300;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    setCtx(context);
 
-  // criando um objeto Image
-  const img = new Image();
+    // Ajuste o tamanho do canvas
+    setWidth(canvas.width);
+    setHeight(canvas.height);
+  }, []);
 
-  // Upload de arquivo
-  document.querySelector('#upload').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    processImage(file);
-  });
 
   function handleBtnCapture() {
-
     const imageSrc = webcamRef.current.getScreenshot();
 
     if (imageSrc) {
       processImage(imageSrc);
+    } else {
+      console.error('Erro de captura');
     }
-    else {
-      console.error('erro de captura');
-    }
+  }
+
+  function handleChangeFile(e) {
+    const file = e.target.files[0];
+    processImage(file);
   }
 
   function processImage(file) {
+    const img = new Image();
 
-    // criando um objeto URL sendo a imagem carregada
-    const objectURL = URL.createObjectURL(file);
-
-    // quando a imagem for carregada
-    img.onload = function () {
-
-      // desenhe a imagem redimensionada no canvas
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // obtenha os dados de pixel da imagem
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-
-      console.log(data);
-
-      // desenhe os dados de pixel manipulados de volta no canvas
-      ctx.putImageData(imageData, 0, 0);
-
+    if (typeof file === 'string') {
+      img.src = file;
+    } else {
+      const objectURL = URL.createObjectURL(file);
+      img.src = objectURL;
     }
 
-    // Defina a fonte da imagem usando a URL do objeto
-    img.src = objectURL;
-  }
+    img.onload = function () {
+      if (ctx) {
+        const canvas = canvasRef.current;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  // const img = new Image();
-  // img.src = './waterlily.png';
-  // img.crossOrigin = 'anonymous';
-  // img.onload = () => original();
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        console.log(data);
+
+        ctx.putImageData(imageData, 0, 0);
+      }
+    };
+  }
 
   async function loadWasm() {
     const arraySize = (width * height * 4) >>> 0;
@@ -78,125 +77,85 @@ function App() {
     return wasm.instance.exports;
   }
 
-
-  function original() {
-    ctx.drawImage(img, 0, 0, width, height);
-  }
-
   async function manipulate(action, params = []) {
     const wasm = await loadWasm();
 
     const imageData = originalImageData();
-    console.log(imageData);
     const bytes = new Uint8ClampedArray(wasm.memory.buffer);
 
     copyData(imageData.data, bytes);
 
-    wasm[action](width, height, ...params);
+    wasm[action](canvasRef.current.width, canvasRef.current.height, ...params);
 
     writeImageData(imageData, bytes);
   }
 
   function originalImageData() {
     original();
-    return ctx.getImageData(0, 0, width, height);
+    return ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
   }
 
   function copyData(src, dest) {
-    for (let i = 0; i < src.length; i++)
+    for (let i = 0; i < src.length; i++) {
       dest[i] = src[i];
+    }
   }
 
   function writeImageData(imageData, bytes) {
     const data = imageData.data;
-    for (let i = 0; i < data.length; i++)
+    for (let i = 0; i < data.length; i++) {
       data[i] = bytes[i];
+    }
 
     ctx.putImageData(imageData, 0, 0);
   }
 
-  document.querySelector('.action.original').onclick = e => {
-    e.preventDefault();
-    original();
-  }
+  useEffect(() => {
+    document.querySelector('.action.original').onclick = e => {
+      e.preventDefault();
+      original();
+    };
 
-  document.querySelector('.action.invert').onclick = e => {
-    e.preventDefault();
-    manipulate('invert');
-  }
+    document.querySelector('.action.invert').onclick = e => {
+      e.preventDefault();
+      manipulate('invert');
+    };
 
-  document.querySelector('.action.grayscale').onclick = e => {
-    e.preventDefault();
-    manipulate('grayscale');
-  }
+    document.querySelector('.action.grayscale').onclick = e => {
+      e.preventDefault();
+      manipulate('grayscale');
+    };
 
+    document.querySelector('.action.basicMonochrome').onclick = e => {
+      e.preventDefault();
+      manipulate('basicMonochrome', [150]);
+    };
 
-  document.querySelector('.action.basicMonochrome').onclick = e => {
-    e.preventDefault();
-    manipulate('basicMonochrome', [150]);
-  }
-
-  document.querySelector('.action.randomMonochrome').onclick = e => {
-    e.preventDefault();
-    manipulate('randomMonochrome', [80]);
-  }
-
-  // Acessando a webcam
-  const videoElement = document.getElementById('webcam');
-  const imgResultElement = document.getElementById('imgResult');
-  const btnCapture = document.getElementById('btnCapture');
-
-  // Configurações do vídeo
-  const videoConstraints = {
-    width: 250,
-    height: 250,
-    facingMode: "user"
-  };
-
-  // Acessa a câmera do usuário e exibe no elemento de vídeo
-  navigator.mediaDevices.getUserMedia({ video: videoConstraints })
-    .then((stream) => {
-      videoElement.srcObject = stream;
-    })
-    .catch((error) => {
-      console.error('Erro ao acessar a câmera:', error);
-    });
-
-
-  // Captura a imagem quando o botão é clicado
-  btnCapture.addEventListener('click', () => {
-
-    // Desenha o quadro do vídeo no canvas
-    canvas.getContext('2d').drawImage(videoElement, 0, 0, width, height);
-
-    // Converte o canvas para uma imagem em base64
-    const imageData = canvas.toDataURL('image/jpeg');
-    console.log(imageData.data)
-  });
+    document.querySelector('.action.randomMonochrome').onclick = e => {
+      e.preventDefault();
+      manipulate('randomMonochrome', [80]);
+    };
+  }, [ctx]);
 
   return (
     <div>
-      <input type="file" id="upload" />
+      <input type="file" id="upload" onChange={handleChangeFile} />
 
-      <canvas id="canvas" width="300" height="300"></canvas>
+      <canvas ref={canvasRef} id="canvas" width={300} height={300}></canvas>
 
-      <video className="video" id="webcam" autoplay playsinline></video>
-      <button className="btnCapture" id="btnCapture">Capturar Imagem</button>
+      <Webcam className='video' ref={webcamRef} audio={false} screenshotFormat="image/jpeg" />
 
-      <ul style="padding: 0px;">
-        <li><a href="#"
-          class="action original">original</a></li>
-        <li><a href="#"
-          class="action invert">invert</a></li>
-        <li><a href="#"
-          class="action grayscale">grayscale</a></li>
-        <li><a href="#"
-          class="action basicMonochrome">basic monochrome</a></li>
-        <li><a href="#"
-          class="action randomMonochrome">random monochrome</a></li>
+      <button className="btnCapture" onClick={handleBtnCapture}>Capturar Imagem</button>
+
+      <ul>
+        <li><a href="#" className="action original">Original</a></li>
+        <li><a href="#" className="action invert">Invert</a></li>
+        <li><a href="#" className="action grayscale">Grayscale</a></li>
+        <li><a href="#" className="action basicMonochrome">Basic Monochrome</a></li>
+        <li><a href="#" className="action randomMonochrome">Random Monochrome</a></li>
       </ul>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

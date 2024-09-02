@@ -25,3 +25,7 @@ li {
     text-transform: uppercase;
     justify-content: center;
 }
+
+ul{
+    padding: 0px;
+}
