@@ -1,13 +1,64 @@
-const canvas = document.querySelector('canvas');
+// importando componentes
+const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
-const [width, height] = [canvas.width, canvas.height];
 
+// ajuste o tamanho do canvas para metade do tamanho da imagem original
+const width = canvas.width = 350;
+const height = canvas.height = 350;
+
+// criando um objeto Image
 const img = new Image();
-img.src = './waterlily.png';
-img.crossOrigin = 'anonymous';
-img.onload = () => original();
+
+// Upload de arquivo
+document.querySelector('#upload').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  processImage(file);
+});
+
+function processImage(file) {
+
+  // criando um objeto URL sendo a imagem carregada
+  const objectURL = URL.createObjectURL(file);
+
+  // // criando um objeto Image
+  // const img = new Image();
+
+  // quando a imagem for carregada
+  img.onload = function () {
+    // // importando componentes
+    // const canvas = document.querySelector('#canvas');
+    // const ctx = canvas.getContext('2d');
+
+    // // ajuste o tamanho do canvas para metade do tamanho da imagem original
+    // const width = canvas.width = 500;
+    // const height = canvas.height = 500;
+
+    // desenhe a imagem redimensionada no canvas
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // obtenha os dados de pixel da imagem
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    console.log(data);
+
+    // desenhe os dados de pixel manipulados de volta no canvas
+    ctx.putImageData(imageData, 0, 0);
+
+  }
+
+  // Defina a fonte da imagem usando a URL do objeto
+  img.src = objectURL;
+}
+
+// const img = new Image();
+// img.src = './waterlily.png';
+// img.crossOrigin = 'anonymous';
+// img.onload = () => original();
 
 async function loadWasm() {
+  const width = canvas.width = 500;
+  const height = canvas.height = 500;
   const arraySize = (width * height * 4) >>> 0;
   const nPages = ((arraySize + 0xffff) & ~0xffff) >>> 16;
   const memory = new WebAssembly.Memory({ initial: nPages });
@@ -18,9 +69,11 @@ async function loadWasm() {
         memory, // npm run asbuild:optimized -- --importMemory
         abort: (_msg, _file, line, column) => console.error(`Abort at ${line}:${column}`),
         seed: () => new Date().getTime()
-      }});
-    return wasm.instance.exports;
+      }
+    });
+  return wasm.instance.exports;
 }
+
 
 function original() {
   ctx.drawImage(img, 0, 0, width, height);
@@ -30,6 +83,7 @@ async function manipulate(action, params = []) {
   const wasm = await loadWasm();
 
   const imageData = originalImageData();
+  console.log(imageData);
   const bytes = new Uint8ClampedArray(wasm.memory.buffer);
 
   copyData(imageData.data, bytes);
@@ -51,8 +105,8 @@ function copyData(src, dest) {
 
 function writeImageData(imageData, bytes) {
   const data = imageData.data;
-  for (let i = 0; i < data.length; i++) 
-     data[i] = bytes[i];
+  for (let i = 0; i < data.length; i++)
+    data[i] = bytes[i];
 
   ctx.putImageData(imageData, 0, 0);
 }

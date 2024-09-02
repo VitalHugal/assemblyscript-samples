@@ -1,20 +1,33 @@
 <html>
+
 <head>
   <title>Image Manipulations</title>
+  <script src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
 
-<canvas id="canvas" width="500" height="500" style="border: 3px solid green"></canvas>
+  <input style="display: flex; margin: 0 auto; padding: 10px;" type="file" id="upload" />
 
-<ul>
-  <li><a href="#" class="action original">original</a></li>
-  <li><a href="#" class="action invert">invert</a></li>
-  <li><a href="#" class="action grayscale">grayscale</a></li>
-  <li><a href="#" class="action basicMonochrome">basic monochrome</a></li>
-  <li><a href="#" class="action randomMonochrome">random monochrome</a></li>
-</ul>
+  <canvas id="canvas" width="350" height="350" style="border: 3px solid green; display: flex; margin: 0 auto;"></canvas>
 
-<script src="index.js"></script>
+  <ul style="text-align: center; ">
+    <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
+        class="action original">original</a></li>
+    <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
+        class="action invert">invert</a></li>
+    <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
+        class="action grayscale">grayscale</a></li>
+    <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
+        class="action basicMonochrome">basic monochrome</a></li>
+    <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
+        class="action randomMonochrome">random monochrome</a></li>
+  </ul>
+
+  <script src="index.js"></script>
 
 </body>
+
 </html>
