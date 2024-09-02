@@ -20,19 +20,9 @@ function processImage(file) {
   // criando um objeto URL sendo a imagem carregada
   const objectURL = URL.createObjectURL(file);
 
-  // // criando um objeto Image
-  // const img = new Image();
-
   // quando a imagem for carregada
   img.onload = function () {
-    // // importando componentes
-    // const canvas = document.querySelector('#canvas');
-    // const ctx = canvas.getContext('2d');
-
-    // // ajuste o tamanho do canvas para metade do tamanho da imagem original
-    // const width = canvas.width = 500;
-    // const height = canvas.height = 500;
-
+    
     // desenhe a imagem redimensionada no canvas
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
