@@ -1,10 +1,11 @@
+console.time("processo total")
 // importando componentes
 const canvas = document.querySelector('#canvas');
 const ctx = canvas.getContext('2d');
 
 // ajuste o tamanho do canvas para metade do tamanho da imagem original
-const width = canvas.width = 350;
-const height = canvas.height = 350;
+const width = canvas.width = 300;
+const height = canvas.height = 300;
 
 // criando um objeto Image
 const img = new Image();
@@ -15,14 +16,27 @@ document.querySelector('#upload').addEventListener('change', function (e) {
   processImage(file);
 });
 
+function handleBtnCapture() {
+
+  const imageSrc = webcamRef.current.getScreenshot();
+
+  if (imageSrc) {
+    processImage(imageSrc);
+  }
+  else {
+    console.error('erro de captura');
+  }
+}
+
 function processImage(file) {
 
   // criando um objeto URL sendo a imagem carregada
   const objectURL = URL.createObjectURL(file);
 
   // quando a imagem for carregada
+  console.time("carregando imagem")
   img.onload = function () {
-    
+
     // desenhe a imagem redimensionada no canvas
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -36,6 +50,7 @@ function processImage(file) {
     ctx.putImageData(imageData, 0, 0);
 
   }
+  console.timeEnd("carregando imagem")
 
   // Defina a fonte da imagem usando a URL do objeto
   img.src = objectURL;
@@ -47,8 +62,6 @@ function processImage(file) {
 // img.onload = () => original();
 
 async function loadWasm() {
-  const width = canvas.width = 500;
-  const height = canvas.height = 500;
   const arraySize = (width * height * 4) >>> 0;
   const nPages = ((arraySize + 0xffff) & ~0xffff) >>> 16;
   const memory = new WebAssembly.Memory({ initial: nPages });
@@ -112,9 +125,12 @@ document.querySelector('.action.invert').onclick = e => {
 }
 
 document.querySelector('.action.grayscale').onclick = e => {
+  console.time("grayscale")
   e.preventDefault();
   manipulate('grayscale');
+  console.timeEnd("grayscale")
 }
+
 
 document.querySelector('.action.basicMonochrome').onclick = e => {
   e.preventDefault();
@@ -125,3 +141,40 @@ document.querySelector('.action.randomMonochrome').onclick = e => {
   e.preventDefault();
   manipulate('randomMonochrome', [80]);
 }
+
+// Acessando a webcam
+const videoElement = document.getElementById('webcam');
+const imgResultElement = document.getElementById('imgResult');
+const btnCapture = document.getElementById('btnCapture');
+
+// Configurações do vídeo
+const videoConstraints = {
+  width: 150,
+  height: 150,
+  facingMode: "user"
+};
+
+// Acessa a câmera do usuário e exibe no elemento de vídeo
+navigator.mediaDevices.getUserMedia({ video: videoConstraints })
+  .then((stream) => {
+    videoElement.srcObject = stream;
+  })
+  .catch((error) => {
+    console.error('Erro ao acessar a câmera:', error);
+  });
+
+
+// Captura a imagem quando o botão é clicado
+btnCapture.addEventListener('click', () => {
+  console.time("capturando imagem")
+  // Desenha o quadro do vídeo no canvas
+  canvas.getContext('2d').drawImage(videoElement, 0, 0, width, height);
+
+  // Converte o canvas para uma imagem em base64
+  const imageData = canvas.toDataURL('image/jpeg');
+  console.log(imageData.data)
+  console.timeEnd("capturando imagem")
+  console.timeEnd("processo total")
+});
+
+

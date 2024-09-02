@@ -5,15 +5,31 @@
   <script src="https://www.lactame.com/lib/image-js/0.21.2/image.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script src="public/webassembly/funcao.js"></script>
 </head>
+<style>
+  .btnCapture, .video {
+    display: flex;
+    margin: 0 auto;
+  }
+
+  .video{
+    padding: 15px;
+  }
+</style>
 
 <body>
 
+
   <input style="display: flex; margin: 0 auto; padding: 10px;" type="file" id="upload" />
 
-  <canvas id="canvas" width="350" height="350" style="border: 3px solid green; display: flex; margin: 0 auto;"></canvas>
+  <canvas id="canvas" width="300" height="300" style="border: 3px solid green; display: flex; margin: 0 auto;"></canvas>
 
-  <ul style="text-align: center; ">
+  <video class="video" id="webcam" autoplay playsinline></video>
+  <button class="btnCapture" id="btnCapture">Capturar Imagem</button>
+
+  <ul style="padding: 0px;">
     <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
         class="action original">original</a></li>
     <li style="display:flex; text-transform: uppercase; justify-content: center;"><a href="#"
