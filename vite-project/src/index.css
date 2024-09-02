@@ -1,0 +1,20 @@
+.btnCapture, .video {
+    display: flex;
+    margin: 0 auto;
+  }
+
+  .video{
+    padding: 15px;
+  }
+
+  #canvas {
+    border: 3px solid green;
+    display: flex;
+    margin: 0 auto;
+}
+
+#upload {
+    display: flex;
+    margin: 0 auto;
+    padding: 10px;
+}
